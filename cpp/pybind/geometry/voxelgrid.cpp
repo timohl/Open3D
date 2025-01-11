@@ -28,6 +28,13 @@ void pybind_voxelgrid_declarations(py::module &m) {
             voxelgrid(m, "VoxelGrid",
                       "VoxelGrid is a collection of voxels which are aligned "
                       "in grid.");
+    py::enum_<VoxelGrid::VoxelPoolingMode> pooling_mode(
+            voxelgrid, "VoxelPoolingMode",
+            "Mode of determining color for each voxel.");
+    pooling_mode.value("AVG", VoxelGrid::VoxelPoolingMode::AVG)
+            .value("MIN", VoxelGrid::VoxelPoolingMode::MIN)
+            .value("MAX", VoxelGrid::VoxelPoolingMode::MAX)
+            .value("SUM", VoxelGrid::VoxelPoolingMode::SUM);
 }
 void pybind_voxelgrid_definitions(py::module &m) {
     auto voxel = static_cast<py::class_<Voxel, std::shared_ptr<Voxel>>>(
@@ -63,15 +70,6 @@ void pybind_voxelgrid_definitions(py::module &m) {
             static_cast<py::class_<VoxelGrid, PyGeometry3D<VoxelGrid>,
                                    std::shared_ptr<VoxelGrid>, Geometry3D>>(
                     m.attr("VoxelGrid"));
-
-    py::enum_<VoxelGrid::VoxelPoolingMode> pooling_mode(
-            voxelgrid, "VoxelPoolingMode",
-            "Mode of determining color for each voxel.");
-    pooling_mode.value("AVG", VoxelGrid::VoxelPoolingMode::AVG)
-            .value("MIN", VoxelGrid::VoxelPoolingMode::MIN)
-            .value("MAX", VoxelGrid::VoxelPoolingMode::MAX)
-            .value("SUM", VoxelGrid::VoxelPoolingMode::SUM);
-
     py::detail::bind_default_constructor<VoxelGrid>(voxelgrid);
     py::detail::bind_copy_functions<VoxelGrid>(voxelgrid);
     voxelgrid
@@ -144,7 +142,7 @@ void pybind_voxelgrid_definitions(py::module &m) {
                         "PointCloud has colors). The bounds of the created "
                         "VoxelGrid are computed from the PointCloud.",
                         "input"_a, "voxel_size"_a,
-                        "pooling_mode"_a = VoxelGrid::VoxelPoolingMode::AVG)
+                        py::arg_v("pooling_mode", VoxelGrid::VoxelPoolingMode::AVG, "VoxelPoolingMode.AVG"))
             .def_static("create_from_point_cloud_within_bounds",
                         &VoxelGrid::CreateFromPointCloudWithinBounds,
                         "Creates a VoxelGrid from a given PointCloud. The "
@@ -154,7 +152,7 @@ void pybind_voxelgrid_definitions(py::module &m) {
                         "PointCloud has colors). The bounds of the created "
                         "VoxelGrid are defined by the given parameters.",
                         "input"_a, "voxel_size"_a, "min_bound"_a, "max_bound"_a,
-                        "pooling_mode"_a = VoxelGrid::VoxelPoolingMode::AVG)
+                        py::arg_v("pooling_mode", VoxelGrid::VoxelPoolingMode::AVG, "VoxelPoolingMode.AVG"))
             .def_static("create_from_triangle_mesh",
                         &VoxelGrid::CreateFromTriangleMesh,
                         "Creates a VoxelGrid from a given TriangleMesh. No "
